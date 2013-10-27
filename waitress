@@ -83,6 +83,9 @@ clear
 
 sudo ceni
 
+# bring it up to sync, if not - it bails out.
+sudo apt-get update 
+
 
 function xfcepnl(){
 echo "sleep 5s && xfce4-panel &" >> /home/$USER/.config/openbox/autostart
@@ -136,7 +139,7 @@ dpms
 }
 
 function xresources(){
-dialog --backtitle "LinuxBBQ - Waitress" --title "Xresources" --menu " \n" 0 0 0
+dialog --backtitle "LinuxBBQ - Waitress" --title "Xresources" --menu " \n" 0 0 0 \
 	m "Monochrome theme" \
 	c "Colorful theme" \
 	b "Back to Main" \
