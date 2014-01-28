@@ -1,0 +1,56 @@
+exit menu:exit
+run...:dmenu_run
+menu:x-terminal-emulator -e bbq
+tmux:x-terminal-emulator -e tmux 
+vi:x-terminal-emulator -e vi
+nano:x-terminal-emulator -e nano
+mcedit:x-terminal-emulator -e mcedit
+ranger:x-terminal-emulator -e ranger 
+mc:x-terminal-emulator -e mc 
+vifm:x-terminal-emulator -e vifm
+hexcurse:x-terminal-emulator -e hexcurse 
+elinks:x-terminal-emulator -e elinks http://ixquick.com 
+links2:x-terminal-emulator -e links2 http://ixquick.com 
+CLI games:x-terminal-emulator -geometry 80x25 -e bbqgames
+nut:x-terminal-emulator -e nut-nutrition
+chords:x-terminal-emulator -e chords
+alsamixer:x-terminal-emulator -e alsamixer 
+moc:x-terminal-emulator -e mocp 
+radio:x-terminal-emulator -e bbqradio
+raffles:x-terminal-emulator -e raffles 
+pms:x-terminal-emulator -e pms
+shell.fm:x-terminal-emulator -e shell-fm
+mutt:x-terminal-emulator -e mutt
+newsbeuter:x-terminal-emulator -e newsbeuter
+irssi:x-terminal-emulator -e irssi
+centerim:x-terminal-emulator -e centerim
+ceni:x-terminal-emulator -geometry 80x25 -e sudo ceni
+nload:x-terminal-emulator -e nload
+spreadsheet:x-terminal-emulator -e sc
+wordgrinder:x-terminal-emulator -e wordgrinder
+pim:x-terminal-emulator -e tina
+notebook:x-terminal-emulator -e hnb
+calcurse:x-terminal-emulator -e calcurse
+wyrd:x-terminal-emulator -e wyrd
+calculator:x-terminal-emulator -e bc
+tapecalc:x-terminal-emulator -e tapecalc
+clock:x-terminal-emulator -geometry 37x9 -e tty-clock 
+:
+htop:x-terminal-emulator -e htop
+powertop:x-terminal-emulator -e sudo powertop
+iftop:x-terminal-emulator -e sudo iftop
+ncdu:x-terminal-emulator -e sudo ncdu /
+frenchmaid:x-terminal-emulator -e frenchmaid
+get kernel:x-terminal-emulator -e get-kernel
+debian handbook:x-terminal-emulator -e links2 /usr/share/doc/debian-handbook/html/index.html
+install linuxbbq:x-terminal-emulator -e sudo bbqinstaller
+create snapshot:x-terminal-emulator -e sudo bbqsnapshot
+:
+edit startup:x-terminal-emulator -e nano ~/.xinitrc
+edit keybinds:x-terminal-emulator -e nano ~/.xbindkeysrc
+edit menu:x-terminal-emulator -e nano ~/.9menurc
+exit menu:exit
+:
+logout: pkill X
+reboot: sudo /sbin/reboot
+shutdown: sudo /sbin/poweroff
