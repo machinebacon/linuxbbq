@@ -1,0 +1,10 @@
+#!/bin/bash
+
+monitor='xrandr | grep "VGA1 connected"'
+
+if [ -n "$monitor" ]; then #check to see if variable is non-empty
+        echo `xrandr --output VGA1 --auto --right-of LVDS1`
+        feh --bg-fill --no-xinerama /usr/share/wallpapers/fishy.jpg &
+else
+        echo `xrandr --output VGA1 --off`
+fi
