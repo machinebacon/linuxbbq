@@ -1,0 +1,34 @@
+"9menu -bg darkgrey -fg black -popup -font -*-terminus-*-*-*-*-12-*-*-*-*-*-*-* -file ~/.9menurc"
+Alt + F2
+
+"x-terminal-emulator -e bbq"
+Alt + F1
+
+"dmenu_run"
+Alt + F3
+
+"sudo /sbin/poweroff"
+Alt + Escape
+
+# volume control
+#"x-terminal-emulator -e alsamixer"
+#Alt + F8
+
+"dmenu_run"
+mod4 + p
+
+"dmenu_run"
+mod4 + F3
+
+"sudo pkill X"
+Shift + Alt + q
+
+"x-terminal-emulator"
+Shift + alt + Return
+
+"x-terminal-emulator -e tmux"
+Shift + mod4 + Return
+
+"scrotnow"
+Print
+
