@@ -1,0 +1,59 @@
+ScreenFont "fixed"
+IconFont "fixed"
+FastQuit yes
+ForceMove always
+AutoRaise yes
+Focus ClickToType
+
+Screen "desk one"
+Module "Background" "-fullscreen /usr/share/wallpapers/amiwm.jpg"
+Screen "desk two"
+
+ToolItem "Console" "x-terminal-emulator" ""
+ToolItem "Browser" "dillo" ""
+ToolItem "Worker" "worker" ""
+ToolItem Separator
+ToolItem "Edit .amiwmrc" "x-terminal-emulator -e nano ~/.amiwmrc" ""
+ToolItem "Edit .xinitrc" "x-terminal-emulator -e nano ~/.xinitrc" ""
+ToolItem Separator
+ToolItem "Amiga 500 Emulator" "fs-uae" ""
+ToolItem "grafx2" "grafx2" ""
+ToolItem Separator
+ToolItem "Games" {
+    ToolItem "Tecnoballz" "tecnoballz" ""
+    ToolItem "Trackballs" "trackballs" ""
+}
+ToolItem "System" {
+    ToolItem "worker" "worker" ""
+    ToolItem "htop" "x-terminal-emulator -e htop" ""
+    ToolItem "clock" "x-terminal-emulator -geometry 37x8 -e tty-clock" ""
+    ToolItem "xosview" "xosview" ""
+    ToolItem "xtrlock" "xtrlock" ""
+}
+ToolItem "Sound" {
+    ToolItem "alsamixer" "x-terminal-emulator -e alsamixer" ""
+    ToolItem "moc" "x-terminal-emulator -e mocp" ""
+    ToolItem "raffles" "x-terminal-emulator -e raffles" ""
+    ToolItem "bbqradio" "x-terminal-emulator -e bbqradio" ""
+    ToolItem "pms" "x-terminal-emulator -e pms" ""
+}
+ToolItem "Network" {
+    ToolItem "elinks" "x-terminal-emulator -e elinks" ""
+    ToolItem "links2" "x-terminal-emulator -e links2 http://linuxbbq.org/start.html" ""
+    ToolItem "ceni" "x-terminal-emulator -geometry 60x20 -e sudo ceni" ""
+    ToolItem "irssi" "x-terminal-emulator -e irssi" ""
+    ToolItem "newsbeuter" "x-terminal-emulator -e newsbeuter" ""
+    ToolItem "mutt" "x-terminal-emulator -e mutt" ""
+}
+ToolItem "Office" {
+    ToolItem "spreadsheet" "x-terminal-emulator -e sc" ""
+    ToolItem "wordgrinder" "x-terminal-emulator -e wordgrinder" ""
+    ToolItem "wyrd" "x-terminal-emulator -e wyrd" ""
+    ToolItem "calcurse" "x-terminal-emulator -e calcurse" ""
+    ToolItem "notebook" "x-terminal-emulator -e hnb" ""
+    ToolItem "PIM" "x-terminal-emulator -e tina" ""
+    ToolItem "Xcalc" "xcalc" ""
+    ToolItem "tapecalc" "x-terminal-emulator -e tapecalc" ""
+    ToolItem "line calculator" "x-terminal-emulator -e bc" ""
+    ToolItem "Xpdf" "xpdf" ""
+}
