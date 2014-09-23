@@ -1,0 +1,149 @@
+#!/bin/bash
+
+ERROR_LOG=/var/log/bbqinstall.log
+
+if [ "$(whoami)" != 'root' ]; then
+        echo "You have no permission to run $0 as non-root user."
+        exit 1;
+fi
+
+BBQINSTALL_CONF="/etc/bbqinstall.conf"
+
+usage() {
+	echo -e "$usage_text"
+	exit 0
+}
+
+usage_text="
+
+Usage: 		bbqinstall <disk> <partition>	write GRUB to \e[1m<disk>\e[0m and install system to \e[1m<partition>\e[0m
+Example:	bbqinstall /dev/sda /dev/sda1
+
+Please check $BBQINSTALL_CONF for ways to customize the installation. Also refer to the output of \e[1mblkid -o list\e[0m for file system information.
+
+"
+
+# print file system table
+[[ -z $1 ]] && echo "E: Specify disk path and a partition!" && usage
+[[ -z $2 ]] && echo "E: Specify a partition!" && usage
+[[ ! -e $1 ]] && echo "E: $1 is not a valid drive" && exit 1
+[[ ! -e $2 ]] && echo "E: $2 is not a valid partition" && exit 1
+
+
+cm1=`exec df -P $1 | tail -1 | cut -d' ' -f 1`
+cm2=`exec df -P $2 | tail -1 | cut -d' ' -f 1`
+
+echo "I: $1 is mounted per $cm1"
+echo "I: $2 is mounted per $cm2"
+
+INSTALL_GRUB="$1"
+INSTALL_PART="$2"
+
+# ERROR CHECK
+check_exit () {
+[[ $? -eq 0 ]] || { echo "
+
+  E:  $?
+  See $ERROR_LOG for details.
+  "
+  exit 1 ; }
+}
+
+
+if [[ -f $BBQINSTALL_CONF ]]; then
+	echo "I: $BBQINSTALL_CONF found, sourcing"
+	source "$BBQINSTALL_CONF"
+else
+	echo "I: $BBQINSTALL_CONF not found, using defaults"
+
+### THESE ARE POSSIBLE VALUES THAT ARE NOT IMPLEMENTED YET.   ###
+#	ROOT_PASS="root"					#
+#	HOST="grill"						#
+#################################################################
+
+fi
+
+EXCLUDES="/etc/bbqinstall_excludes"
+if ! [[ -f $EXCLUDES ]] ; then
+cat > "$EXCLUDES" << EOF
+- /dev/*
+- /cdrom/*
+- /media/*
+- /target
+- /swapfile
+- /mnt/*
+- /sys/*
+- /proc/*
+- /tmp/*
+- /live
+- /lib/live/mount/*
+- /boot/grub/grub.cfg
+- /boot/grub/menu.lst
+- /boot/grub/device.map
+- /etc/udev/rules.d/70-persistent-cd.rules
+- /etc/udev/rules.d/70-persistent-net.rules
+- /etc/fstab
+- /etc/mtab
+- /home/snapshot
+- /home/*/.gvfs
+EOF
+check_exit
+chmod 666 "$EXCLUDES"
+fi
+
+if $(df | grep -q /target/proc/) ; then
+    umount /target/proc/
+fi
+
+if $(df | grep -q /target/dev/) ; then
+    umount /target/dev/
+fi
+
+if $(df | grep -q /target/sys/) ; then
+    umount /target/sys/
+fi
+
+mkdir /target
+
+echo "I: Creating file system on $INSTALL_PART"
+
+mke2fs -t ext4 "$INSTALL_PART" ; check_exit
+tune2fs -r 10000 "$INSTALL_PART" ; check_exit
+
+echo "I: Mounting $INSTALL_PART on target filesystem"
+mount $INSTALL_PART /target ; check_exit
+
+echo "I: Copying files"
+rsync --progress -av / /target/ --exclude-from="$EXCLUDES"
+
+echo "I: Mounting target filesystem"
+mount -t tmpfs --bind /dev/ /target/dev/ ; check_exit
+mount -t proc --bind /proc/ /target/proc/ ; check_exit
+mount -t sysfs --bind /sys/ /target/sys/ ; check_exit
+
+echo "I: Installing bootloader"
+chroot /target grub-install $INSTALL_GRUB
+
+echo "I: Removing live user from installation"
+chroot /target deluser user
+chroot /target rm -rf /home/user
+chroot /target setcap 'cap_sys_tty_config+ep' /usr/bin/fbterm
+
+
+echo "I: Cleaning up"
+if $(df | grep -q /target/proc/) ; then
+    umount /target/proc/
+fi
+if $(df | grep -q /target/dev/) ; then
+    umount /target/dev/
+fi
+if $(df | grep -q /target/sys/) ; then
+    umount /target/sys/
+fi
+if $(df | grep -q /target) ; then
+    umount -l /target/
+fi
+
+echo "I: Success. Installation finished."
+
+exit 0
