@@ -8,26 +8,27 @@ if [ "$(whoami)" != 'root' ]; then
 fi
 
 BBQINSTALL_CONF="/etc/bbqinstall.conf"
+EXCLUDES="/etc/bbqinstall_excludes"
 
 usage() {
-	echo -e "$usage_text"
-	exit 0
+   echo -e "$usage_text"
+   exit 0
 }
 
 usage_text="
 
-Usage: 		bbqinstall <disk> <partition>	write GRUB to \e[1m<disk>\e[0m and install system to \e[1m<partition>\e[0m
-Example:	bbqinstall /dev/sda /dev/sda1
+Usage:     bbqinstall <disk> <partition>   write GRUB to \e[1m<disk>\e[0m and install system to \e[1m<partition>\e[0m
+Example:   bbqinstall /dev/sda /dev/sda1
 
-Please check $BBQINSTALL_CONF for ways to customize the installation. Also refer to the output of \e[1mblkid -o list\e[0m for file system information.
+Refer to the output of \e[1mblkid -o list\e[0m or \e[1mfdisk -l\e[0mfor file system information.
 
 "
 
 # print file system table
 [[ -z $1 ]] && echo "E: Specify disk path and a partition!" && usage
 [[ -z $2 ]] && echo "E: Specify a partition!" && usage
-[[ ! -e $1 ]] && echo "E: $1 is not a valid drive" && exit 1
-[[ ! -e $2 ]] && echo "E: $2 is not a valid partition" && exit 1
+[[ ! -e $1 ]] && echo "E: $1 is not a valid drive" && exit 0
+[[ ! -e $2 ]] && echo "E: $2 is not a valid partition" && exit 0
 
 
 cm1=`exec df -P $1 | tail -1 | cut -d' ' -f 1`
@@ -43,7 +44,7 @@ INSTALL_PART="$2"
 check_exit () {
 [[ $? -eq 0 ]] || { echo "
 
-  E:  $?
+  Exit due to error:  $?
   See $ERROR_LOG for details.
   "
   exit 1 ; }
@@ -51,19 +52,18 @@ check_exit () {
 
 
 if [[ -f $BBQINSTALL_CONF ]]; then
-	echo "I: $BBQINSTALL_CONF found, sourcing"
-	source "$BBQINSTALL_CONF"
+   echo "I: $BBQINSTALL_CONF found, sourcing"
+   source "$BBQINSTALL_CONF"
 else
-	echo "I: $BBQINSTALL_CONF not found, using defaults"
+   echo "I: $BBQINSTALL_CONF not found, using defaults"
 
-### THESE ARE POSSIBLE VALUES THAT ARE NOT IMPLEMENTED YET.   ###
-#	ROOT_PASS="root"					#
-#	HOST="grill"						#
+### THESE ARE POSSIBLE VALUES THAT ARE NOT IMPLEMENTED YET.
+#   ROOT_PASS="root"               
+#   HOST="grill"                  
 #################################################################
 
 fi
 
-EXCLUDES="/etc/bbqinstall_excludes"
 if ! [[ -f $EXCLUDES ]] ; then
 cat > "$EXCLUDES" << EOF
 - /dev/*
@@ -121,14 +121,16 @@ mount -t tmpfs --bind /dev/ /target/dev/ ; check_exit
 mount -t proc --bind /proc/ /target/proc/ ; check_exit
 mount -t sysfs --bind /sys/ /target/sys/ ; check_exit
 
-echo "I: Installing bootloader"
+echo "I: Installing bootloader to $INSTALL_GRUB"
 chroot /target grub-install $INSTALL_GRUB
+chroot /target update-grub
 
 echo "I: Removing live user from installation"
 chroot /target deluser user
 chroot /target rm -rf /home/user
-chroot /target setcap 'cap_sys_tty_config+ep' /usr/bin/fbterm
 
+#echo "I: Setting terminal capabilities"
+#chroot /target setcap 'cap_sys_tty_config+ep' /usr/bin/fbterm
 
 echo "I: Cleaning up"
 if $(df | grep -q /target/proc/) ; then
@@ -145,5 +147,7 @@ if $(df | grep -q /target) ; then
 fi
 
 echo "I: Success. Installation finished."
-
-exit 0
+echo 
+echo -e "You can now boot into the newly installed system and log in as \e[1mroot\e[0m using the password \e[1mroot\e[0m."
+echo -e "Then, change the root password using the command \e[1mpasswd root\e[0m."
+echo -e "Add new users using the command \e[1madduser <username>\e[0m."
