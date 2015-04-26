@@ -1,26 +1,29 @@
 #!/bin/bash
 
+
+DISTRONAME=`cat /etc/lsb-release |grep CODENAME |gawk -F= '{ print $2 $3 }'`
+
 ERROR_LOG=/var/log/bbqinstall.log
 
 if [ "$(whoami)" != 'root' ]; then
-        echo "You have no permission to run $0 as non-root user."
-        exit 1;
+        TEXT="You have no permission to run bbqinstall as non-root user."
+	echo $TEXT
+	exit 1;
 fi
 
 BBQINSTALL_CONF="/etc/bbqinstall.conf"
 EXCLUDES="/etc/bbqinstall_excludes"
 
 usage() {
-   echo -e "$usage_text"
+   echo "$usage_text"
    exit 0
 }
 
 usage_text="
-
-Usage:     bbqinstall <disk> <partition>   write GRUB to \e[1m<disk>\e[0m and install system to \e[1m<partition>\e[0m
+Usage:     bbqinstall <disk> <partition>   write GRUB to <disk> and install system to <partition>
 Example:   bbqinstall /dev/sda /dev/sda1
 
-Refer to the output of \e[1mblkid -o list\e[0m or \e[1mfdisk -l\e[0mfor file system information.
+Refer to the output of blkid -o list or fdisk -l for file system information.
 
 "
 
@@ -29,6 +32,9 @@ Refer to the output of \e[1mblkid -o list\e[0m or \e[1mfdisk -l\e[0mfor file sys
 [[ -z $2 ]] && echo "E: Specify a partition!" && usage
 [[ ! -e $1 ]] && echo "E: $1 is not a valid drive" && exit 0
 [[ ! -e $2 ]] && echo "E: $2 is not a valid partition" && exit 0
+
+# START COUNTING
+START=$(date +%s.%N)
 
 
 cm1=`exec df -P $1 | tail -1 | cut -d' ' -f 1`
@@ -55,15 +61,16 @@ if [[ -f $BBQINSTALL_CONF ]]; then
    echo "I: $BBQINSTALL_CONF found, sourcing"
    source "$BBQINSTALL_CONF"
 else
-   echo "I: $BBQINSTALL_CONF not found, using defaults"
+   echo "I: $BBQINSTALL_CONF not found, using defaults" 
+
 
 ### THESE ARE POSSIBLE VALUES THAT ARE NOT IMPLEMENTED YET.
-#   ROOT_PASS="root"               
-#   HOST="grill"                  
+#   ROOT_PASS="root"              
+#   HOST="grill"                 
 #################################################################
 
 fi
-
+read n
 if ! [[ -f $EXCLUDES ]] ; then
 cat > "$EXCLUDES" << EOF
 - /dev/*
@@ -106,6 +113,8 @@ fi
 mkdir /target
 
 echo "I: Creating file system on $INSTALL_PART"
+espeak "Creating file system on $INSTALL_PART" >/dev/null 2>&1
+
 
 mke2fs -t ext4 "$INSTALL_PART" ; check_exit
 tune2fs -r 10000 "$INSTALL_PART" ; check_exit
@@ -113,21 +122,30 @@ tune2fs -r 10000 "$INSTALL_PART" ; check_exit
 echo "I: Mounting $INSTALL_PART on target filesystem"
 mount $INSTALL_PART /target ; check_exit
 
-echo "I: Copying files"
-rsync --progress -av / /target/ --exclude-from="$EXCLUDES"
+echo "I: Copying files to install $DISTRONAME, please wait"
+
+rsync -av / /target/ --exclude-from="$EXCLUDES" >/dev/null 2>&1
+
+echo "I: Adding fstab entries"
+echo -e "proc\t\t/proc\tproc\tdefaults\t0\t0
+$INSTALL_PART\t/\text4\tdefaults,noatime\t0\t1" >> /target/etc/fstab
 
 echo "I: Mounting target filesystem"
-mount -t tmpfs --bind /dev/ /target/dev/ ; check_exit
-mount -t proc --bind /proc/ /target/proc/ ; check_exit
-mount -t sysfs --bind /sys/ /target/sys/ ; check_exit
+mount --bind /dev/ /target/dev/ ; check_exit
+mount --bind /proc/ /target/proc/ ; check_exit
+mount --bind /sys/ /target/sys/ ; check_exit
 
-echo "I: Installing bootloader to $INSTALL_GRUB"
-chroot /target grub-install $INSTALL_GRUB
-chroot /target update-grub
+echo "I: Installing bootloader to $INSTALL_GRUB, please wait"
+
+chroot /target grub-install $INSTALL_GRUB > /dev/null 2>&1
+chroot /target update-grub > /dev/null 2>&1
 
 echo "I: Removing live user from installation"
 chroot /target deluser user
 chroot /target rm -rf /home/user
+
+echo "I: Disabling autologin"
+chroot /target cp /usr/lib/bbqinstaller/inittab.debian /etc/inittab
 
 #echo "I: Setting terminal capabilities"
 #chroot /target setcap 'cap_sys_tty_config+ep' /usr/bin/fbterm
@@ -146,8 +164,11 @@ if $(df | grep -q /target) ; then
     umount -l /target/
 fi
 
+END=$(date +%s.%N)
+DIFF=$(echo "scale=2; ($END - $START)/1" | bc)
 echo "I: Success. Installation finished."
-echo 
-echo -e "You can now boot into the newly installed system and log in as \e[1mroot\e[0m using the password \e[1mroot\e[0m."
-echo -e "Then, change the root password using the command \e[1mpasswd root\e[0m."
-echo -e "Add new users using the command \e[1madduser <username>\e[0m."
+echo  "I: Elapsed time: $DIFF seconds."
+echo
+echo  "You can now boot into the newly installed system and log in as root using the password root."
+echo  "Then, change the root password using the command passwd root."
+echo  "Add new users using the command adduser <username>."
