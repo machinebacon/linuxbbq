@@ -12,7 +12,7 @@ fi
 
 dialog --infobox "Updating, please wait" 0 0
 
-#sudo apt update -y &>/dev/null
+sudo apt update -y &>/dev/null
 
 spkg(){
 dialog --clear --title "Package search" --inputbox "Enter the search string" 0 0 term 2> $tempfile
