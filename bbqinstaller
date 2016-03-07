@@ -741,9 +741,9 @@ fi
 
 # mount stuff so grub will behave (so chroot will work)
 #echo -e "\n Mounting tmpfs and proc...\n"
-mount -t tmpfs --bind /dev/ /target/dev/ ; check_exit 
-mount -t proc --bind /proc/ /target/proc/ ; check_exit 
-mount -t sysfs --bind /sys/ /target/sys/ ; check_exit 
+mount --bind /dev/ /target/dev/ ; check_exit 
+mount -t proc /proc/ /target/proc/ ; check_exit 
+mount -t sysfs /sys/ /target/sys/ ; check_exit 
 
 
 # Re-enable freshclam if it was disabled by snapshot 		##### This ain't perfect, but it works!
