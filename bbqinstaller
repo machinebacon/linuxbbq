@@ -582,7 +582,7 @@ fi
 
 # copy separate /boot if needed
 if [[ -n $boot_dev ]] ; then
-    dialog --sleep 1 --backtitle "LinuxBBQ Installer" --infobox"\n Copying files to boot partitions...\n" 5 45
+    dialog --sleep 1 --backtitle "LinuxBBQ Installer" --infobox "\n Copying files to boot partitions...\n" 5 45
     rsync -aq /boot/ /target_boot/  --exclude-from="$home_boot_excludes"
 fi
 
