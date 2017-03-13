@@ -1,0 +1,22 @@
+#!/bin/bash
+#
+# radio-browser TUI frontend (depends: curl, jq, mpg123)
+
+[[ -z $1 ]] && printf "E: Enter search term for radio stations.\n" && exit 0
+
+BYNAME=http://www.radio-browser.info/webservice/json/stations/byname
+STATION_LIST=/tmp/stations
+BUFFER=3000
+PLAYER="mpg123"
+PARAMS="-c -b $BUFFER"
+
+printf "Searching for stations containing $1... \n"
+curl -A "LinuxBBQ Radiobro" -s $BYNAME/$1 | jq '.[] | .url' > $STATION_LIST
+
+killall $PLAYER 2> /dev/null
+
+array=( $(cat $STATION_LIST) )
+select opt in "${array[@]}"; do
+	$PLAYER $PARAMS `echo $opt | tr -d '"' | tr -d ';'` &
+	break
+done
